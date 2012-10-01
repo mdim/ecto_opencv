@@ -4,6 +4,8 @@
 
 find_package(OpenCV REQUIRED)
 
+#set(CMAKE_BUILD_TYPE Debug)
+
 add_library(opencv_rgbd src/normal.cpp
                         src/depth_to_3d.cpp
                         src/odometry.cpp
@@ -29,18 +31,48 @@ install(DIRECTORY include/opencv2/rgbd
 add_executable(odometry_evaluation samples/odometry_evaluation.cpp)
 target_link_libraries(odometry_evaluation ${OpenCV_LIBRARIES} opencv_rgbd)
 
+# Add model capture stuff
+find_package(PCL REQUIRED COMPONENTS io filters visualization features segmentation surface)
+include_directories(${PCL_INCLUDE_DIRS})
+
+set(g2o_INCLUDE_DIR "/home/mdim/work/g2o/install/include")
+set(g2o_LIB_DIR "/home/mdim/work/g2o/install/lib")
+set(g2o_SOURCE_DIR "/home/mdim/work/g2o/g2o")
+
+LIST(APPEND CMAKE_MODULE_PATH ${g2o_SOURCE_DIR}/cmake_modules)
+
+# Find Eigen3
+FIND_PACKAGE(Eigen3)
+FIND_PACKAGE(Cholmod)
+
+include_directories(${g2o_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR} ${CHOLMOD_INCLUDE_DIR})
+
+add_executable(model_capture samples/model_capture.cpp 
+                             samples/model_capture/model_capture.hpp
+                             samples/model_capture/ocv_pcl_eigen_convert.hpp
+                             samples/model_capture/create_optimizer.hpp
+                             samples/model_capture/load_data.cpp
+                             samples/model_capture/mask_data.cpp
+                             samples/model_capture/frame_to_frame.cpp
+                             samples/model_capture/graph_se3.cpp
+                             samples/model_capture/graph_se3_rgbd_icp.cpp
+                             samples/model_capture/graph_se3_landmarks.cpp
+                             samples/model_capture/show_model.cpp
+              )
+target_link_libraries(model_capture ${OpenCV_LIBRARIES} opencv_rgbd ${PCL_LIBRARY_DIRS}/libpcl_filters.so ${PCL_LIBRARY_DIRS}/libpcl_surface.so ${PCL_LIBRARY_DIRS}/libpcl_segmentation.so ${PCL_LIBRARY_DIRS}/libpcl_visualization.so ${g2o_LIB_DIR}/libg2o_core.so ${g2o_LIB_DIR}/libg2o_types_slam3d.so ${g2o_LIB_DIR}/libg2o_types_icp.so ${CHOLMOD_LIBRARIES})
+
 # Add some tests
-add_executable(rgbd_tests test/test_main.cpp
-                          test/test_normal.cpp
-                          test/test_odometry.cpp
-                          test/test_precomp.cpp
-                          test/test_utils.cpp
-)
+#add_executable(rgbd_tests test/test_main.cpp
+#                          test/test_normal.cpp
+#                          test/test_odometry.cpp
+#                          test/test_precomp.cpp
+#                          test/test_utils.cpp
+#)
 
-find_library(OPENCV_TS_LIBRARY opencv_ts ${OpenCV_LIB_DIR})
-target_link_libraries(rgbd_tests ${OpenCV_LIBRARIES}
-                                 opencv_rgbd
-                                 ${OPENCV_TS_LIBRARY}
-)
+#find_library(OPENCV_TS_LIBRARY opencv_ts ${OpenCV_LIB_DIR})
+#target_link_libraries(rgbd_tests ${OpenCV_LIBRARIES}
+#                                 opencv_rgbd
+#                                 ${OPENCV_TS_LIBRARY}
+#)
 
-add_test(rgbd_tests rgbd_tests)
+#add_test(rgbd_tests rgbd_tests)
