@@ -44,8 +44,9 @@ LIST(APPEND CMAKE_MODULE_PATH ${g2o_SOURCE_DIR}/cmake_modules)
 # Find Eigen3
 FIND_PACKAGE(Eigen3)
 FIND_PACKAGE(Cholmod)
+FIND_PACKAGE(CSparse)
 
-include_directories(${g2o_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR} ${CHOLMOD_INCLUDE_DIR})
+include_directories(${g2o_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR} ${CHOLMOD_INCLUDE_DIR} ${CSPARSE_INCLUDE_DIR})
 
 add_executable(model_capture samples/model_capture.cpp 
                              samples/model_capture/model_capture.hpp
@@ -59,7 +60,18 @@ add_executable(model_capture samples/model_capture.cpp
                              samples/model_capture/graph_se3_landmarks.cpp
                              samples/model_capture/show_model.cpp
               )
-target_link_libraries(model_capture ${OpenCV_LIBRARIES} opencv_rgbd ${PCL_LIBRARY_DIRS}/libpcl_filters.so ${PCL_LIBRARY_DIRS}/libpcl_surface.so ${PCL_LIBRARY_DIRS}/libpcl_segmentation.so ${PCL_LIBRARY_DIRS}/libpcl_visualization.so ${g2o_LIB_DIR}/libg2o_core.so ${g2o_LIB_DIR}/libg2o_types_slam3d.so ${g2o_LIB_DIR}/libg2o_types_icp.so ${CHOLMOD_LIBRARIES})
+
+target_link_libraries(model_capture ${OpenCV_LIBRARIES}
+                                    opencv_rgbd
+                                    ${PCL_LIBRARY_DIRS}/libpcl_filters.so
+                                    ${PCL_LIBRARY_DIRS}/libpcl_surface.so
+                                    ${PCL_LIBRARY_DIRS}/libpcl_segmentation.so
+                                    ${PCL_LIBRARY_DIRS}/libpcl_visualization.so
+                                    ${g2o_LIB_DIR}/libg2o_core.so
+                                    ${g2o_LIB_DIR}/libg2o_types_slam3d.so
+                                    ${g2o_LIB_DIR}/libg2o_types_icp.so
+                                    ${CHOLMOD_LIBRARIES}
+                                    ${CSPARSE_LIBRARY} ${g2o_LIB_DIR}/libg2o_csparse_extension.so)
 
 # Add some tests
 #add_executable(rgbd_tests test/test_main.cpp
